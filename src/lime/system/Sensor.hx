@@ -12,7 +12,9 @@ class Sensor
 	private static var sensors = new Array<Sensor>();
 
 	public var id:Int;
+	#if !macro
 	public var onUpdate = new Event<Float->Float->Float->Void>();
+	#end
 	public var type:SensorType;
 
 	@:noCompletion private function new(type:SensorType, id:Int)
