@@ -1759,6 +1759,7 @@ class NativeCFFI
 	private static var lime_al_get_listener3i = new cpp.Callable<Int->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_al_get_listener3i", "io", false));
 	private static var lime_al_get_listenerf = new cpp.Callable<Int->cpp.Float32>(cpp.Prime._loadPrime("lime", "lime_al_get_listenerf", "if", false));
 	private static var lime_al_get_listenerfv = new cpp.Callable<Int->Int->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_al_get_listenerfv", "iio", false));
+	private static var lime_al_get_sourcedv_soft = new cpp.Callable<cpp.Object->Int->Int->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_al_get_sourcedv_soft", "oiio", false));
 	private static var lime_al_get_listeneri = new cpp.Callable<Int->Int>(cpp.Prime._loadPrime("lime", "lime_al_get_listeneri", "ii", false));
 	private static var lime_al_get_listeneriv = new cpp.Callable<Int->Int->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_al_get_listeneriv", "iio", false));
 	private static var lime_al_get_proc_address = new cpp.Callable<String->Float>(cpp.Prime._loadPrime("lime", "lime_al_get_proc_address", "sd", false));
@@ -1910,6 +1911,7 @@ class NativeCFFI
 	private static var lime_al_get_source3i = CFFI.load("lime", "lime_al_get_source3i", 2);
 	private static var lime_al_get_sourcef = CFFI.load("lime", "lime_al_get_sourcef", 2);
 	private static var lime_al_get_sourcefv = CFFI.load("lime", "lime_al_get_sourcefv", 3);
+	private static var lime_al_get_sourcedv_soft = CFFI.load("lime", "lime_al_get_sourcedv_soft", 3);
 	private static var lime_al_get_sourcei = CFFI.load("lime", "lime_al_get_sourcei", 2);
 	private static var lime_al_get_sourceiv = CFFI.load("lime", "lime_al_get_sourceiv", 3);
 	private static var lime_al_get_string = CFFI.load("lime", "lime_al_get_string", 1);
@@ -2163,6 +2165,11 @@ class NativeCFFI
 	}
 
 	@:hlNative("lime", "hl_al_get_sourcefv") private static function lime_al_get_sourcefv(source:CFFIPointer, param:Int, count:Int):hl.NativeArray<hl.F32>
+	{
+    	return null;
+    }
+
+	@:hlNative("lime", "hl_al_get_sourcedv_soft") private static function lime_al_get_sourcedv_soft(source:CFFIPointer, param:Int, count:Int):hl.NativeArray<hl.F64>
 	{
 		return null;
 	}
