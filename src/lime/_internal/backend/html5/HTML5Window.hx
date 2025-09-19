@@ -328,7 +328,7 @@ class HTML5Window
 						depth: Reflect.hasField(contextAttributes, "depth") ? contextAttributes.depth : true,
 						premultipliedAlpha: true,
 						stencil: Reflect.hasField(contextAttributes, "stencil") ? contextAttributes.stencil : false,
-						preserveDrawingBuffer: false,
+						preserveDrawingBuffer: Reflect.hasField(contextAttributes, "preserveDrawingBuffer") ? contextAttributes.preserveDrawingBuffer : false,
 						failIfMajorPerformanceCaveat: false
 					};
 
@@ -380,6 +380,11 @@ class HTML5Window
 	}
 
 	public function focus():Void {}
+
+	public function setVSyncMode(mode:lime.ui.WindowVSyncMode):Bool
+	{
+		return false;
+	}
 
 	private function focusTextInput():Void
 	{

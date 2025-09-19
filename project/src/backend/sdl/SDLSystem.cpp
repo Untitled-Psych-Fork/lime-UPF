@@ -31,6 +31,10 @@
 #endif
 #endif
 
+#ifdef ANDROID
+#include <android/asset_manager_jni.h>
+#endif
+
 #include <SDL.h>
 #include <string>
 
@@ -83,6 +87,13 @@ namespace lime {
 		#else
 		return 0;
 		#endif
+
+	}
+
+
+	int System::GetTicks () {
+
+		return SDL_GetTicks ();
 
 	}
 
@@ -533,6 +544,45 @@ namespace lime {
 	}
 
 
+	#if defined(ANDROID) || defined (IPHONE)
+	int System::GetFirstGyroscopeSensorId () {
+
+		int numSensors = SDL_NumSensors ();
+
+		for (int i = 0; i < numSensors; i++) {
+
+			if (SDL_SensorGetDeviceType (i) == SDL_SENSOR_GYRO) {
+
+				return SDL_SensorGetDeviceInstanceID(i);
+
+			}
+
+		}
+
+		return -1;
+
+	}
+
+	int System::GetFirstAccelerometerSensorId () {
+
+		int numSensors = SDL_NumSensors ();
+
+		for (int i = 0; i < numSensors; i++) {
+
+			if (SDL_SensorGetDeviceType (i) == SDL_SENSOR_ACCEL) {
+
+				return SDL_SensorGetDeviceInstanceID(i);
+
+			}
+
+		}
+
+		return -1;
+
+	}
+	#endif
+
+
 	int System::GetNumDisplays () {
 
 		return SDL_GetNumVideoDisplays ();
@@ -564,6 +614,46 @@ namespace lime {
 	}
 
 
+	int System::GetDisplayOrientation(int displayIndex) {
+		int orientation = 0;
+		switch(SDL_GetDisplayOrientation(displayIndex)) {
+			case SDL_ORIENTATION_UNKNOWN:
+				orientation = 0;
+				break;
+			case SDL_ORIENTATION_LANDSCAPE:
+				orientation = 1;
+				break;
+			case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+				orientation = 2;
+				break;
+			case SDL_ORIENTATION_PORTRAIT:
+				orientation = 3;
+				break;
+			case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+				orientation = 4;
+				break;
+		}
+
+		return orientation;
+	}
+
+
+	#if !defined(IPHONE)
+	void System::OpenFile (const char* path) {
+
+		OpenURL (path, NULL);
+
+	}
+
+
+	void System::OpenURL (const char* url, const char* target) {
+
+		SDL_OpenURL (url);
+
+	}
+	#endif
+
+
 	FILE* FILE_HANDLE::getFile () {
 
 		#ifndef HX_WINDOWS
@@ -571,32 +661,26 @@ namespace lime {
 		switch (((SDL_RWops*)handle)->type) {
 
 			case SDL_RWOPS_STDFILE:
-
+			{
+				#ifdef HAVE_STDIO_H
 				return ((SDL_RWops*)handle)->hidden.stdio.fp;
-
+				#else
+				#error Lime requires HAVE_STDIO_H
+				#endif
+			}
 			case SDL_RWOPS_JNIFILE:
 			{
 				#ifdef ANDROID
 				System::GCEnterBlocking ();
-				FILE* file = ::fdopen (((SDL_RWops*)handle)->hidden.androidio.fd, "rb");
-				::fseek (file, ((SDL_RWops*)handle)->hidden.androidio.offset, 0);
+				int fd;
+				off_t outStart;
+				off_t outLength;
+				fd = AAsset_openFileDescriptor ((AAsset*)(((SDL_RWops*)handle)->hidden.androidio.asset), &outStart, &outLength);
+				FILE* file = ::fdopen (fd, "rb");
+				::fseek (file, outStart, 0);
 				System::GCExitBlocking ();
 				return file;
 				#endif
-			}
-
-			case SDL_RWOPS_WINFILE:
-			{
-				/*#ifdef HX_WINDOWS
-				printf("SDKFLJDSLFKJ\n");
-				int fd = _open_osfhandle ((uintptr_t)((SDL_RWops*)handle)->hidden.windowsio.h, _O_RDONLY);
-
-				if (fd != -1) {
-					printf("SDKFLJDSLFKJ\n");
-					return ::fdopen (fd, "rb");
-
-				}
-				#endif*/
 			}
 
 		}

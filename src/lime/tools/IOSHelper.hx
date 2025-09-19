@@ -6,6 +6,8 @@ import lime.tools.HXProject;
 import sys.io.Process;
 import sys.FileSystem;
 
+using StringTools;
+
 class IOSHelper
 {
 	private static var initialized = false;
@@ -30,6 +32,13 @@ class IOSHelper
 		else
 		{
 			commands.push("build");
+			if (project.targetFlags.exists("nosign"))
+			{
+				commands.push("CODE_SIGN_IDENTITY=\"\"");
+				commands.push("CODE_SIGNING_REQUIRED=\"NO\"");
+				commands.push("CODE_SIGN_ENTITLEMENTS=\"\"");
+				commands.push("CODE_SIGNING_ALLOWED=\"NO\"");
+			}
 		}
 
 		if (additionalArguments != null)
@@ -59,7 +68,7 @@ class IOSHelper
 
 		System.runCommand(workingDirectory, "xcodebuild", archiveCommands);
 
-		var supportedExportMethods = ["adhoc", "development", "enterprise", "appstore"];
+		var supportedExportMethods = ["adhoc", "development", "enterprise", "appstore", "testflight-internal"];
 		var exportMethods = [];
 		for (m in supportedExportMethods)
 		{
@@ -121,7 +130,7 @@ class IOSHelper
 
 		if (project.targetFlags.exists("simulator"))
 		{
-			if (project.targetFlags.exists("i386") || project.targetFlags.exists("32"))
+			if (project.targetFlags.exists("i386") || project.targetFlags.exists("32") || project.targetFlags.exists("x86_32"))
 			{
 				commands.push("-arch");
 				commands.push("i386");
@@ -317,6 +326,12 @@ class IOSHelper
 
 			var currentDeviceID = XCodeHelper.getSimulatorID(project);
 
+			if (Log.verbose)
+			{
+				var currentSimulatorName = XCodeHelper.getSimulatorName(project);
+				Log.info("Using iOS simulator: " + currentSimulatorName);
+			}
+
 			try
 			{
 				System.runProcess("", "open", ["-Ra", "iOS Simulator"], true, false);
@@ -346,21 +361,61 @@ class IOSHelper
 				applicationPath = workingDirectory + "/build/" + configuration + "-iphoneos/" + project.app.file + ".app";
 			}
 
-			var templatePaths = [
-				Path.combine(Haxelib.getPath(new Haxelib(#if lime "lime" #else "hxp" #end)), #if lime "templates" #else "" #end)
-			].concat(project.templatePaths);
-			var launcher = System.findTemplate(templatePaths, "bin/ios-deploy");
-			Sys.command("chmod", ["+x", launcher]);
+			var xcodeVersion = Std.parseFloat(getXcodeVersion());
+			if (!Math.isNaN(xcodeVersion) && xcodeVersion >= 16) {
+				// ios-deploy doesn't work with newer iOS SDKs where it can't
+				// find DeveloperDiskImage.dmg. however, Xcode 16 adds new
+				// commands for installing and launching apps on connected
+				// devices, so we'll prefer those, if available.
+				var listDevicesOutput = System.runProcess("", "xcrun", ["devicectl", "list", "devices", "--hide-default-columns", "--columns", "Name", "--columns", "Identifier", "--filter", "Platform == 'iOS' AND (State == 'connected' OR State == 'available (paired)')"]);
+				var deviceUUID:String = null;
+				var deviceName:String = null;
+				var ready = false;
+				for (line in listDevicesOutput.split("\n")) {
+					if (!ready) {
+						ready = StringTools.startsWith(line, "----");
+						continue;
+					}
+					// Parse the line to get both name and UUID
+					// Format: Name   Identifier
+					// Split by multiple spaces to separate the two columns
+					var regex = ~/\s{2,}/;
+					var parts = regex.split(line);
+					if (parts.length >= 2) {
+						deviceName = parts[0].trim();
+						deviceUUID = parts[1].trim();
+					} else {
+						deviceName = "Unknown Device";
+						deviceUUID = line.trim();
+					}
+					break;
+				}
+				if (deviceUUID == null || deviceUUID.length == 0) {
+					Log.error("No device connected");
+					return;
+				}
 
-			// var xcodeVersion = getXcodeVersion ();
+				System.runCommand("", "xcrun", ["devicectl", "device", "install", "app", "--device", deviceUUID, FileSystem.fullPath(applicationPath)]);
 
-			System.runCommand("", launcher, [
-				"install",
-				"--noninteractive",
-				"--debug",
-				"--bundle",
-				FileSystem.fullPath(applicationPath)
-			]);
+				// Check if device is unlocked before launching (required for console logging)
+				waitForDeviceUnlock(deviceUUID, deviceName);
+
+				System.runCommand("", "xcrun", ["devicectl", "device", "process", "launch", "--console", "--device", deviceUUID, project.meta.packageName]);
+			} else {
+				var templatePaths = [
+					Path.combine(Haxelib.getPath(new Haxelib(#if lime "lime" #else "hxp" #end)), #if lime "templates" #else "" #end)
+				].concat(project.templatePaths);
+				var launcher = System.findTemplate(templatePaths, "bin/ios-deploy");
+				Sys.command("chmod", ["+x", launcher]);
+
+				System.runCommand("", launcher, [
+					"install",
+					"--noninteractive",
+					"--debug",
+					"--bundle",
+					FileSystem.fullPath(applicationPath)
+				]);
+			}
 		}
 	}
 
@@ -408,4 +463,54 @@ class IOSHelper
 			}
 		}
 	}
+
+	private static function waitForDeviceUnlock(deviceUUID:String, deviceName:String):Void
+	{
+		var hasShownMessage = false;
+
+		if (!isDeviceScreenLocked(deviceUUID))
+		{
+			Log.info("Device (" + deviceName + ") is already unlocked, launching app...");
+			return;
+		}
+
+		while (isDeviceScreenLocked(deviceUUID))
+		{
+			if (!hasShownMessage)
+			{
+				Log.warn("Device (" + deviceName + ") is locked. Please unlock the device to continue app launch...");
+				hasShownMessage = true;
+			}
+
+			Sys.sleep(2); // Wait 2 seconds before checking again
+		}
+
+		if (hasShownMessage)
+		{
+			Log.info("Device (" + deviceName + ") unlocked, launching app...");
+		}
+	}
+
+	private static function isDeviceScreenLocked(deviceUUID:String):Bool
+	{
+		try
+		{
+			var output = System.runProcess("", "xcrun", ["devicectl", "device", "info", "lockState", "--device", deviceUUID]);
+
+			// Simple test: if output contains "passcodeRequired: true" anywhere, device is locked
+			if (output != null && output.indexOf("passcodeRequired: true") > -1)
+			{
+				return true;
+			}
+
+			return false;
+		}
+		catch (e:Dynamic)
+		{
+			Log.warn("Failed to check device lock state: " + e);
+			// If we can't determine the lock state, assume it's unlocked to avoid blocking
+			return false;
+		}
+	}
+
 }

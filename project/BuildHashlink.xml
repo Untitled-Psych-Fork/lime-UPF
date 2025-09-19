@@ -1,5 +1,4 @@
 <xml>
-	<set name="PLATFORM" value="android-21" if="android" />
 	<set name="HXCPP_CPP11" value="1" />
 
 	<include name="${HXCPP}/build-tool/BuildCommon.xml" />
@@ -55,20 +54,50 @@
 		<file name="${HASHLINK_PATH}/src/std/track.c" />
 		<file name="${HASHLINK_PATH}/src/std/ucs2.c" />
 
-		<!-- PCRE -->
+		<!-- PCRE2 -->
 		<file name="${HASHLINK_PATH}/include/pcre/pcre16_ord2utf16.c" />
+		<compilerflag value="-DHAVE_CONFIG_H" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_globals.c" />
+		<compilerflag value="-DPCRE2_CODE_UNIT_WIDTH=16" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre16_valid_utf16.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_auto_possess.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_newline.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_chartables.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_chartables.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_compile.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_string_utils.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_config.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_compile.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_context.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_tables.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_convert.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_dfa_exec.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_dfa_match.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_ucd.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_error.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_exec.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_extuni.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_xclass.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_find_bracket.c" />
 		<file name="${HASHLINK_PATH}/include/pcre/pcre_fullinfo.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_jit_compile.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_maketables.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_match_data.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_match.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_newline.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_ord2utf.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_pattern_info.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_script_run.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_serialize.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_string_utils.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_study.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_substitute.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_substring.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_tables.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_ucd.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_ucptables.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_valid_utf.c" />
+		<file name="${HASHLINK_PATH}/include/pcre/pcre2_xclass.c" />
 
 		<!-- macOS debugging -->
 		<file name="${HASHLINK_PATH}/include/mdbg/mdbg.c" if="mac" />
@@ -372,6 +401,8 @@
 		<ext value=".hdll" />
 		<files id="ssl" />
 
+		<vflag name="-install_name" value="@executable_path/ssl.hdll" if="mac"/>
+
 		<lib name="-lhl" unless="windows" />
 		<lib name="-L${OUTPUT_DIR}/${BINDIR}" unless="windows" />
 		<lib name="-libpath:${OUTPUT_DIR}/${BINDIR}" if="windows" />
@@ -397,6 +428,8 @@
 		<ext value=".hdll" />
 		<files id="mysql" />
 
+		<vflag name="-install_name" value="@executable_path/mysql.hdll" if="mac"/>
+
 		<lib name="-lhl" unless="windows" />
 		<lib name="-L${OUTPUT_DIR}/${BINDIR}" unless="windows" />
 		<lib name="-libpath:${OUTPUT_DIR}/${BINDIR}" if="windows" />
@@ -408,6 +441,8 @@
 		<outdir name="${OUTPUT_DIR}/${BINDIR}" />
 		<ext value=".hdll" />
 		<files id="fmt" />
+
+		<vflag name="-install_name" value="@executable_path/fmt.hdll" if="mac"/>
 
 		<lib name="-L/usr/local/lib" if="mac" />
 		<lib name="-L/usr/local/opt/libjpeg-turbo/lib" if="mac" />
@@ -434,6 +469,8 @@
 		<ext value=".hdll" />
 		<files id="ui" />
 
+		<vflag name="-install_name" value="@executable_path/ui.hdll" if="mac"/>
+
 		<lib name="-lhl" unless="windows" />
 		<lib name="-L${OUTPUT_DIR}/${BINDIR}" unless="windows" />
 		<section if="windows">
@@ -449,6 +486,8 @@
 		<outdir name="${OUTPUT_DIR}/${BINDIR}" />
 		<ext value=".hdll" />
 		<files id="uv" />
+
+		<vflag name="-install_name" value="@executable_path/uv.hdll" if="mac"/>
 
 		<lib name="-L/usr/local/lib" if="mac" />
 
@@ -494,4 +533,9 @@
 	</target>
 
 	<copyFile name="libhl.lib" from="obj/lib/" overwrite="true" toolId="dll" if="windows" />
+	<copyFile name="ssl.lib" from="obj/lib/" allowMissing="true" overwrite="true" toolid="dll" if="windows" />
+	<copyFile name="mysql.lib" from="obj/lib/" allowMissing="true" overwrite="true" toolId="dll" if="windows" />
+	<copyFile name="fmt.lib" from="obj/lib/" allowMissing="true" overwrite="true" toolId="dll" if="windows" />
+	<copyFile name="ui.lib" from="obj/lib/" allowMissing="true" overwrite="true" toolId="dll" if="windows" />
+	<copyFile name="uv.lib" from="obj/lib/" allowMissing="true" overwrite="true" toolId="dll" if="windows" />
 </xml>

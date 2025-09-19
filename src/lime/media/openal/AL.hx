@@ -2,6 +2,7 @@ package lime.media.openal;
 
 #if (!lime_doc_gen || lime_openal)
 import lime._internal.backend.native.NativeCFFI;
+import lime.system.CFFI;
 import lime.system.CFFIPointer;
 import lime.utils.ArrayBufferView;
 
@@ -231,6 +232,13 @@ class AL
 	public static inline var FILTER_LOWPASS:Int = 0x0001;
 	public static inline var FILTER_HIGHPASS:Int = 0x0002;
 	public static inline var FILTER_BANDPASS:Int = 0x0003;
+
+	public static inline var DEVICE_CLOCK_SOFT:Int = 0x1600;
+	public static inline var DEVICE_LATENCY_SOFT:Int = 0x1601;
+	public static inline var DEVICE_CLOCK_LATENCY_SOFT:Int = 0x1602;
+
+	public static inline var SEC_OFFSET_LATENCY_SOFT:Int = 0x1201;
+	public static inline var SEC_OFFSET_CLOCK_SOFT:Int = 0x1203;
 
 	public static function removeDirectFilter(source:ALSource)
 	{
@@ -998,10 +1006,7 @@ class AL
 	{
 		#if (lime_cffi && lime_openal && !macro)
 		var result = NativeCFFI.lime_al_get_string(param);
-		#if hl
-		var result = @:privateAccess String.fromUTF8(result);
-		#end
-		return result;
+		return CFFI.stringValue(result);
 		#else
 		return null;
 		#end
