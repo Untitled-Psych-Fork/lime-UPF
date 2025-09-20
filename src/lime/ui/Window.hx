@@ -2090,7 +2090,6 @@ class Window
 			"050000005e040000e0020000ff070000,Xbox Wireless Controller,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b9,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,start:b10,x:b2,y:b3,platform:iOS"
 
 		];
-		];
 
 		Gamepad.addMappings(mappings);
 		#elseif android
