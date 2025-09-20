@@ -171,18 +171,6 @@ abstract BGRA(#if (flash && !lime_doc_gen) Int #else UInt #end) from Int to Int 
 		}
 	}
 
-	public inline function lighten(amt:Int){
-        r = Std.int(Math.min( 255, r + amt ));
-        g = Std.int(Math.min( 255, g + amt));
-        b = Std.int(Math.min( 255, b + amt));      
-	}
-
-	public inline function darken(amt:Int){
-        r = Std.int(Math.max( 0, r - amt ));
-        g = Std.int(Math.max( 0, g - amt));
-        b = Std.int(Math.max( 0, b - amt));       
-	}
-
 	@:from private static inline function __fromARGB(argb:ARGB):BGRA
 	{
 		return BGRA.create(argb.b, argb.g, argb.r, argb.a);
