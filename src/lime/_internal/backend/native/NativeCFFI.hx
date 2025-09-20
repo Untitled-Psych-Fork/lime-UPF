@@ -1667,6 +1667,16 @@ class NativeCFFI
 
 	@:cffi private static function lime_alc_suspend_context(context:CFFIPointer):Void;
 
+	@:cffi private static function lime_alc_capture_open_device(devicename:String, frequency:Int, format:Int, buffersize:Int):CFFIPointer;
+
+	@:cffi private static function lime_alc_capture_close_device(device:CFFIPointer):Bool;
+
+	@:cffi private static function lime_alc_capture_start(device:CFFIPointer):Void;
+
+	@:cffi private static function lime_alc_capture_stop(device:CFFIPointer):Void;
+
+	@:cffi private static function lime_alc_capture_samples(device:CFFIPointer, buffer:Dynamic, samples:Int):Void;
+
 	@:cffi private static function lime_al_gen_filter():CFFIPointer;
 
 	@:cffi private static function lime_al_filteri(filter:CFFIPointer, param:Int, value:Dynamic):Void;
