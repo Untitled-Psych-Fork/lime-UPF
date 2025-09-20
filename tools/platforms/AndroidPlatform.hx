@@ -354,6 +354,9 @@ class AndroidPlatform extends PlatformTarget
 		var apkPath = Path.combine(outputDirectory, project.app.file + "-" + build + ".apk");
 
 		deviceID = AndroidHelper.install(project, apkPath, deviceID);
+		// (Goose-git Amazon code)
+		// Install things like IAP test files to the target device
+		AmazonPlatform.installAmazon( project, deviceID );
 	}
 
 	public override function rebuild():Void
@@ -394,6 +397,8 @@ class AndroidPlatform extends PlatformTarget
 
 	public override function update():Void
 	{
+		// (Goose-git Amazon code)
+		AmazonPlatform.defineAmazonHaxeFlag( project );
 		AssetHelper.processLibraries(project, targetDirectory);
 
 		// project = project.clone ();
@@ -456,6 +461,9 @@ class AndroidPlatform extends PlatformTarget
 
 		var context = project.templateContext;
 
+		// (Goose-git Amazon code)
+		AmazonPlatform.defineAmazonContextFlag( project, context );
+		
 		context.CPP_DIR = targetDirectory + "/obj";
 		context.OUTPUT_DIR = targetDirectory;
 		context.ANDROID_INSTALL_LOCATION = project.config.getString("android.install-location", "auto");
