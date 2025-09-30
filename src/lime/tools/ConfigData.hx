@@ -574,4 +574,15 @@ abstract ConfigData(Dynamic) to Dynamic from Dynamic
 			Reflect.setField(bucket, node, value);
 		}
 	}
+
+	// Getters & Setters
+
+	private inline function get_xmlChildren():Array<String> {
+		return Reflect.field(this, "config:xml_children");
+	}
+
+	private inline function set_xmlChildren(value:Array<String>):Array<String> {
+		Reflect.setField(this, "config:xml_children", value);
+		return value;
+	}
 }
