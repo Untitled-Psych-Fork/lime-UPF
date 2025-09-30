@@ -9,6 +9,13 @@ import haxe.xml.Fast as Access;
 
 abstract ConfigData(Dynamic) to Dynamic from Dynamic
 {
+	private static inline var ARRAY:String = "config:array_";
+
+	/**
+		If set, `parse()` will add child nodes to this array instead of parsing them.
+	**/
+	@:noCompletion public var xmlChildren(get, set):Array<String>;
+	
 	public function new()
 	{
 		this = {};
