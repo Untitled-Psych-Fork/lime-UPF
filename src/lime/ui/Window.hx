@@ -2090,12 +2090,11 @@ class Window
 			"050000005e040000e0020000ff070000,Xbox Wireless Controller,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b9,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,start:b10,x:b2,y:b3,platform:iOS"
 
 		];
-		];
 
 		Gamepad.addMappings(mappings);
+
 		#elseif android
 		var mappings = [
-
 			"38653964633230666463343334313533,8BitDo Adapter,a:b0,b:b1,back:b15,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:b17,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:b18,rightx:a2,righty:a3,start:b6,x:b2,y:b3,platform:Android",
 			"36666264316630653965636634386234,8BitDo Adapter 2,a:b0,b:b1,back:b15,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b19,leftshoulder:b9,leftstick:b7,lefttrigger:b17,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:b18,rightx:a2,righty:a3,start:b6,x:b2,y:b3,platform:Android",
 			"38426974446f20417263616465205374,8BitDo Arcade Stick,a:b0,b:b1,back:b15,dpdown:+a1,dpleft:-a0,dpright:+a0,dpup:-a1,guide:b5,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,platform:Android",
@@ -2392,12 +2391,12 @@ class Window
 			"050000005e040000130b0000ffff3f00,Xbox Series Controller,a:b0,b:b1,back:b15,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,platform:Android",
 			"65633038363832353634653836396239,Xbox Series Controller,a:b0,b:b1,back:b15,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,platform:Android",
 			"050000001727000044310000ffff3f00,XiaoMi Controller,a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a7,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a6,rightx:a2,righty:a5,start:b6,x:b2,y:b3,platform:Android",
-
 		];
 
 		Gamepad.addMappings(mappings);
 		#end
 	}
+
 
 	public function alert(message:String = null, title:String = null):Void
 	{
