@@ -34,6 +34,10 @@ jobs:
           haxelib install format --quiet
           haxelib install hxp --quiet
 
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
+
       - name: Enable HXCPP compile cache
         run: |
           echo "HXCPP_COMPILE_CACHE=~/.hxcpp" >> $GITHUB_ENV
@@ -76,6 +80,10 @@ jobs:
       - name: Install samples
         run: |
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       - name: Build HelloWorld sample
         run: |
@@ -126,6 +134,10 @@ jobs:
           haxelib install format --quiet
           haxelib install hxp --quiet
 
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
+
       - name: Enable HXCPP compile cache
         run: |
           echo "HXCPP_COMPILE_CACHE=~/.hxcpp" >> $GITHUB_ENV
@@ -159,6 +171,10 @@ jobs:
       - name: Install samples
         run: |
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       # - name: Build HelloWorld sample
       #   run: |
@@ -197,6 +213,9 @@ jobs:
           haxelib install hxcpp 4.2.1 --quiet
           haxelib install format --quiet
           haxelib install hxp --quiet
+
+      - name: Fix haxelib repo
+        run: haxelib fixrepo
 
       - name: Enable HXCPP compile cache
         run: |
@@ -247,6 +266,10 @@ jobs:
         run: |
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
 
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
+
       - name: Build HelloWorld sample
         run: |
           lime create HelloWorld -verbose -nocolor
@@ -296,6 +319,14 @@ jobs:
           haxelib install format --quiet
           haxelib install hxp --quiet
 
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
+
       - name: Enable HXCPP compile cache
         run: |
           echo "HXCPP_COMPILE_CACHE=~/.hxcpp" >> $GITHUB_ENV
@@ -328,6 +359,10 @@ jobs:
       - name: Install samples
         run: |
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       - name: Build HelloWorld sample
         run: |
@@ -366,6 +401,10 @@ jobs:
           haxelib install format --quiet
           haxelib install hxp --quiet
 
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
+
       - name: Enable HXCPP compile cache
         run: |
           echo "HXCPP_COMPILE_CACHE=~/.hxcpp" >> $GITHUB_ENV
@@ -390,6 +429,10 @@ jobs:
       - name: Install samples
         run: |
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       # - name: Build HelloWorld sample
       #   run: |
@@ -430,7 +473,11 @@ jobs:
           haxelib install format --quiet
           haxelib install hxp --quiet
           haxelib install svg --quiet
-          haxelib install openfl --quiet
+          haxelib git openfl https://github.com/Untitled-Psych-Fork/openfl-UPF --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       - name: Enable HXCPP compile cache
         run: |
@@ -530,8 +577,13 @@ jobs:
 
       - name: Install Haxe dependencies
         run: |
+          haxelib --global update haxelib --quiet
           haxelib install dox --quiet
           haxelib dev lime ${{ github.workspace }}
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       - name: Build docs
         working-directory: docs
@@ -560,9 +612,14 @@ jobs:
 
       - name: Install Haxe dependencies
         run: |
+          haxelib --global update haxelib --quiet
           haxelib install format --quiet
           haxelib install hxp --quiet
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       - name: Prepare Lime
         run: |
@@ -616,6 +673,10 @@ jobs:
           haxelib install hxp --quiet
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
 
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
+
       - name: Prepare Lime
         run: |
           haxelib dev lime ${{ github.workspace }}
@@ -660,7 +721,12 @@ jobs:
 
       - name: Install Haxe dependencies
         run: |
+          haxelib --global update haxelib --quiet
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       - uses: actions/download-artifact@v4
         with:
@@ -703,10 +769,15 @@ jobs:
 
       - name: Install Haxe dependencies
         run: |
+          haxelib --global update haxelib --quiet
           haxelib install format --quiet
           haxelib install hxp --quiet
           haxelib install genes --quiet
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       - name: Prepare Lime
         run: |
@@ -767,7 +838,12 @@ jobs:
 
       - name: Install Haxe dependencies
         run: |
+          haxelib --global update haxelib --quiet
           haxelib git lime-samples https://github.com/openfl/lime-samples --quiet
+
+      - name: Fix haxelib repo
+        run: |
+          haxelib fixrepo
 
       - uses: actions/download-artifact@v4
         with:
