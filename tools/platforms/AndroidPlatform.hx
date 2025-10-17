@@ -151,7 +151,7 @@ class AndroidPlatform extends PlatformTarget
         		Log.error("Bundling requires a release keystore (upload key). Add <certificate .../> to project.xml.");			
 
 			// Use ALL architectures including x86_64 as this can be used for Google play games on PC
-			project.architectures = [Architecture.ARMV7, Architecture.ARM64, Architecture.X64];
+			project.architectures = [Architecture.ARMV7, Architecture.ARM64, Architecture.X64, Architecture.X86];
 		}
 		else{
 
