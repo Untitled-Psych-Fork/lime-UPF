@@ -108,7 +108,69 @@ class AndroidPlatform extends PlatformTarget
 		{
 			project.architectures.remove(excludeArchitecture);
 		}
+		
+		// ---------------------
+		// Added 2025
+		// GOOSE
+		// GREGDENNESS
+		//
+		// Allow aab bundle builds for final release to google play store by using:
+		// lime test android -bundle
+		//
+		trace("==============================================================" );
+		trace("Building for Android, options are:" );
+		trace("" );
+		trace("lime test android -debug -quick	: arm64 only, fast test builds" );
+		trace("lime test android -debug -no_arm64	: arm7 only, testing on arm7 devices" );
+		trace("lime test android -debug -simulator	: for testing on simulator" );
+		trace("lime test android -release		: APK for Amazon submission" );
+		trace("lime test android -bundle		: AAB for Google Play submission" );
+		trace("" );
+		trace("==============================================================" );
 
+		if (project.targetFlags.exists("bundle")) 
+		{
+			trace("Building bundle release (AAB file)");
+
+			// Make sure other flags are not on
+			if (project.targetFlags.exists("debug")) 
+				Log.error("You cannot build a debug version of a aab bundle file");
+
+			if (project.targetFlags.exists("simulator") || project.targetFlags.exists("emulator")) 
+				Log.error("You cannot build a bundle file for simulator");
+			
+			// 1) Force release build graph
+			project.debug = false;                // turn off debug symbols/defines in Lime          
+			this.buildType = "release";           // select release HXML
+			project.targetFlags.remove("debug");  // ignore -debug if someone passed it
+
+			// 2) Make Gradle produce an AAB (not APK)
+			project.environment.set("ANDROID_GRADLE_TASK", ":app:bundleRelease");
+
+			if (project.keystore == null) 
+        		Log.error("Bundling requires a release keystore (upload key). Add <certificate .../> to project.xml.");			
+
+			// Use ALL architectures including x86_64 as this can be used for Google play games on PC
+			project.architectures = [Architecture.ARMV7, Architecture.ARM64, Architecture.X64, Architecture.X86];
+		}
+		else{
+
+			// To ONLY build a specific Architecture use these (to speed things up)
+			//
+			// lime test android -debug -no_arm7
+			//
+			// This is what you would want to test on modern phones with (dont usally need arm7)
+			if ( project.targetFlags.exists("no_arm7") || project.targetFlags.exists("quick")|| project.targetFlags.exists("fast"))
+				project.architectures.remove(Architecture.ARMV7);
+
+			if ( project.targetFlags.exists("no_arm64"))
+				project.architectures.remove(Architecture.ARM64);
+		}
+
+		trace("Building Architectures: " + project.architectures);
+
+		// -- end our custom code
+		
 		if (command != "display" && command != "clean")
 		{
 			// project = project.clone ();
@@ -161,8 +223,9 @@ class AndroidPlatform extends PlatformTarget
 
 		for (architecture in architectures)
 		{
-			var haxeParams = [hxml, "-D", "android", "-D", "PLATFORM=android-21"];
-			var cppParams = ["-Dandroid", "-DPLATFORM=android-21"];
+			var minSDKVer = project.config.getInt("android.minimum-sdk-version", 21);
+			var haxeParams = [hxml, "-D", "android", "-D", 'PLATFORM_NUMBER=$minSDKVer'];
+			var cppParams = ["-Dandroid", '-DPLATFORM_NUMBER=$minSDKVer'];
 			var path = sourceSet + "/jniLibs/armeabi";
 			var suffix = ".so";
 
@@ -320,6 +383,16 @@ class AndroidPlatform extends PlatformTarget
 
 	public override function install():Void
 	{
+		if (project.targetFlags.exists("bundle")){
+			trace("==========================================");
+			trace("==========================================");
+			trace("Android bundle file built!");
+			trace("No install step needed as we built a bundle file, you can now uploade this .aab file to Google Play");
+			trace("==========================================");
+			trace("==========================================");
+			return;
+		}
+		
 		var build = "debug";
 
 		if (project.keystore != null)
@@ -354,6 +427,9 @@ class AndroidPlatform extends PlatformTarget
 		var apkPath = Path.combine(outputDirectory, project.app.file + "-" + build + ".apk");
 
 		deviceID = AndroidHelper.install(project, apkPath, deviceID);
+		// (Goose-git Amazon code)
+		// Install things like IAP test files to the target device
+		AmazonPlatform.installAmazon( project, deviceID );
 	}
 
 	public override function rebuild():Void
@@ -367,12 +443,14 @@ class AndroidPlatform extends PlatformTarget
 		var x64 = (/*command == "rebuild" ||*/ ArrayTools.containsValue(project.architectures, Architecture.X64));
 
 		var commands = [];
+		var minSDKVer = 21;
+		var platformDefine = '-DPLATFORM_NUMBER=$minSDKVer';
 
-		if (armv5) commands.push(["-Dandroid", "-DPLATFORM=android-21"]);
-		if (armv7) commands.push(["-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7", "-DPLATFORM=android-21"]);
-		if (arm64) commands.push(["-Dandroid", "-DHXCPP_ARM64", "-DPLATFORM=android-21"]);
-		if (x86) commands.push(["-Dandroid", "-DHXCPP_X86", "-DPLATFORM=android-21"]);
-		if (x64) commands.push(["-Dandroid", "-DHXCPP_X86_64", "-DPLATFORM=android-21"]);
+		if (armv5) commands.push(["-Dandroid", platformDefine]);
+		if (armv7) commands.push(["-Dandroid", "-DHXCPP_ARMV7", platformDefine]);
+		if (arm64) commands.push(["-Dandroid", "-DHXCPP_ARM64", platformDefine]);
+		if (x86) commands.push(["-Dandroid", "-DHXCPP_X86", platformDefine]);
+		if (x64) commands.push(["-Dandroid", "-DHXCPP_X86_64", platformDefine]);
 
 		CPPHelper.rebuild(project, commands);
 	}
@@ -394,6 +472,8 @@ class AndroidPlatform extends PlatformTarget
 
 	public override function update():Void
 	{
+		// (Goose-git Amazon code)
+		AmazonPlatform.defineAmazonHaxeFlag( project );
 		AssetHelper.processLibraries(project, targetDirectory);
 
 		// project = project.clone ();
@@ -454,12 +534,20 @@ class AndroidPlatform extends PlatformTarget
 			project.haxeflags.push("-xml " + targetDirectory + "/types.xml");
 		}
 
+		if (project.targetFlags.exists("json"))
+		{
+			project.haxeflags.push("--json " + targetDirectory + "/types.json");
+		}
+
 		var context = project.templateContext;
+
+		// (Goose-git Amazon code)
+		AmazonPlatform.defineAmazonContextFlag( project, context );
 
 		context.CPP_DIR = targetDirectory + "/obj";
 		context.OUTPUT_DIR = targetDirectory;
 		context.ANDROID_INSTALL_LOCATION = project.config.getString("android.install-location", "auto");
-		context.ANDROID_MINIMUM_SDK_VERSION = project.config.getInt("android.minimum-sdk-version", 21);
+		context.ANDROID_MINIMUM_SDK_VERSION = project.config.getInt("android.minimum-sdk-version", 23);
 		context.ANDROID_TARGET_SDK_VERSION = project.config.getInt("android.target-sdk-version", 30);
 		context.ANDROID_EXTENSIONS = project.config.getArrayString("android.extension");
 		context.ANDROID_PERMISSIONS = project.config.getArrayString("android.permission", [
@@ -472,6 +560,7 @@ class AndroidPlatform extends PlatformTarget
 		context.ANDROID_GRADLE_PLUGIN = project.config.getString("android.gradle-plugin", "7.3.1");
 		context.ANDROID_USE_ANDROIDX = project.config.getString("android.useAndroidX", "true");
 		context.ANDROID_ENABLE_JETIFIER = project.config.getString("android.enableJetifier", "false");
+		context.ANDROID_GRADLE_PROPERTIES = project.config.getKeyValueArray("android.gradle-properties");
 
 		context.ANDROID_LIBRARY_PROJECTS = [];
 
@@ -501,6 +590,29 @@ class AndroidPlatform extends PlatformTarget
 
 		context.ANDROID_SDK_ESCAPED = StringTools.replace(context.ENV_ANDROID_SDK, "\\", "\\\\");
 		context.ANDROID_NDK_ROOT_ESCAPED = StringTools.replace(context.ENV_ANDROID_NDK_ROOT, "\\", "\\\\");
+		
+		// we need to specify ndkVersion in build.gradle, and the value can be
+		// found in the NDK's source.properties file
+		var ndkSrcPropsPath = Path.join([context.ENV_ANDROID_NDK_ROOT, "source.properties"]);
+		if (FileSystem.exists(ndkSrcPropsPath))
+		{
+			try
+			{
+				var srcProps = File.getContent(ndkSrcPropsPath);
+				var lines = srcProps.split("\n");
+				for (line in lines)
+				{
+					var parts = ~/\s+=\s+/.split(StringTools.trim(line));
+					if (parts.length == 2 && parts[0] == "Pkg.Revision")
+					{
+						context.ANDROID_NDK_VERSION = parts[1];
+					}
+				}
+			}
+			catch (e:Dynamic)
+			{
+			}
+		}
 
 		if (Reflect.hasField(context, "KEY_STORE")) context.KEY_STORE = StringTools.replace(context.KEY_STORE, "\\", "\\\\");
 		if (Reflect.hasField(context, "KEY_STORE_ALIAS")) context.KEY_STORE_ALIAS = StringTools.replace(context.KEY_STORE_ALIAS, "\\", "\\\\");
@@ -532,24 +644,41 @@ class AndroidPlatform extends PlatformTarget
 			}
 		}
 
-		var iconTypes = ["ldpi", "mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"];
-		var iconSizes = [36, 48, 72, 96, 144, 192];
-		var icons = project.icons;
-
-		if (icons.length == 0)
+		if (context.HAS_ICON == null)
 		{
-			icons = [new Icon(System.findTemplate(project.templatePaths, "default/icon.svg"))];
-		}
+			var iconTypes = ["ldpi", "mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"];
+			var iconSizes = [36, 48, 72, 96, 144, 192];
+			var icons = project.icons;
 
-		for (i in 0...iconTypes.length)
-		{
-			if (IconHelper.createIcon(icons, iconSizes[i], iconSizes[i], sourceSet + "/res/drawable-" + iconTypes[i] + "/icon.png"))
+			if (project.adaptiveIcon != null)
 			{
+				ProjectHelper.recursiveSmartCopyDirectory(project, project.adaptiveIcon.path, destination + "/app/src/main/res/", context);
 				context.HAS_ICON = true;
+				context.ANDROID_APPLICATION.push({ key: "android:icon", value: "@mipmap/ic_launcher" });
+				if (project.adaptiveIcon.hasRoundIcon)
+				{
+					context.ANDROID_APPLICATION.push({ key: "android:roundIcon", value: "@mipmap/ic_launcher_round" });
+				}
+			}
+			else
+			{
+				if (icons.length == 0)
+				{
+					icons = [new Icon(System.findTemplate(project.templatePaths, "default/icon.svg"))];
+				}
+				for (i in 0...iconTypes.length)
+				{
+					// create multiple icons, only set "android:icon" once
+					if (IconHelper.createIcon(icons, iconSizes[i], iconSizes[i], sourceSet + "/res/drawable-" + iconTypes[i] + "/icon.png")
+						&& !context.HAS_ICON)
+					{
+						context.HAS_ICON = true;
+						context.ANDROID_APPLICATION.push({ key: "android:icon", value: "@drawable/icon" });
+					}
+				}
+				IconHelper.createIcon(icons, 732, 412, sourceSet + "/res/drawable-xhdpi/ouya_icon.png");
 			}
 		}
-
-		IconHelper.createIcon(icons, 732, 412, sourceSet + "/res/drawable-xhdpi/ouya_icon.png");
 
 		var packageDirectory = project.meta.packageName;
 		packageDirectory = sourceSet + "/java/" + packageDirectory.split(".").join("/");

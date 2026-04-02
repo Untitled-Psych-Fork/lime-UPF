@@ -38,6 +38,7 @@ class HXProject extends Script
 	public var haxelibs:Array<Haxelib>;
 	public var host(get, null):Platform;
 	public var icons:Array<Icon>;
+	public var adaptiveIcon:AdaptiveIcon;
 	public var javaPaths:Array<String>;
 	public var keystore:Keystore;
 	public var languages:Array<String>;
@@ -60,6 +61,7 @@ class HXProject extends Script
 	public var templatePaths:Array<String>;
 	@:isVar public var window(get, set):WindowData;
 	public var windows:Array<WindowData>;
+	public var projectFilePath:String;
 
 	private var needRerun:Bool;
 
@@ -250,6 +252,11 @@ class HXProject extends Script
 			project.icons.push(icon.clone());
 		}
 
+		if (adaptiveIcon != null)
+		{
+			project.adaptiveIcon = adaptiveIcon.clone();
+		}
+		
 		project.javaPaths = javaPaths.copy();
 
 		if (keystore != null)
@@ -721,6 +728,11 @@ class HXProject extends Script
 			icons = ArrayTools.concatUnique(icons, project.icons);
 			javaPaths = ArrayTools.concatUnique(javaPaths, project.javaPaths, true);
 
+			if (project.adaptiveIcon != null)
+			{
+				adaptiveIcon = project.adaptiveIcon;
+			}
+
 			if (keystore == null)
 			{
 				keystore = project.keystore;
@@ -737,6 +749,11 @@ class HXProject extends Script
 			else
 			{
 				launchStoryboard.merge(project.launchStoryboard);
+			}
+
+			if (projectFilePath == null)
+			{
+				projectFilePath = project.projectFilePath;
 			}
 
 			languages = ArrayTools.concatUnique(languages, project.languages, true);

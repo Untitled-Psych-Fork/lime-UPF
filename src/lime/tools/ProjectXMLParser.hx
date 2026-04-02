@@ -849,7 +849,7 @@ class ProjectXMLParser extends HXProject
 		{
 			switch (attribute)
 			{
-				case "title", "description", "package", "version", "company", "company-id", "build-number", "company-url":
+				case "title", "description", "package", "version", "company", "company-id", "build-number", "company-url", "copyright-years":
 					var value = substitute(element.att.resolve(attribute));
 
 					defines.set("APP_" + StringTools.replace(attribute, "-", "_").toUpperCase(), value);
@@ -1454,41 +1454,80 @@ class ProjectXMLParser extends HXProject
 							}
 						}
 
-					case "icon":
-						var path = "";
+				case "icon":
+					var path = "";
 
-						if (element.has.path)
-						{
-							path = Path.combine(extensionPath, substitute(element.att.path));
-						}
-						else
-						{
-							path = Path.combine(extensionPath, substitute(element.att.name));
-						}
+					if (element.has.path)
+					{
+						path = Path.combine(extensionPath, substitute(element.att.path));
+					}
+					else
+					{
+						path = Path.combine(extensionPath, substitute(element.att.name));
+					}
 
+					if (target == Platform.ANDROID && element.has.adaptive)
+					{
+						adaptiveIcon = new AdaptiveIcon(path, element.has.round ? element.att.round == "true" : false);
+					}
+					else
+					{
 						var icon = new Icon(path);
 
 						if (element.has.size)
 						{
-							icon.size = icon.width = icon.height = Std.parseInt(substitute(element.att.size));
+							var parsedValue = Std.parseInt(substitute(element.att.size));
+							if (parsedValue == null)
+							{
+								Log.warn("Ignoring unknown size=\"" + element.att.size + "\"");
+							}
+							else
+							{
+								icon.size = icon.width = icon.height = parsedValue;
+							}
 						}
 
 						if (element.has.width)
 						{
-							icon.width = Std.parseInt(substitute(element.att.width));
+							var parsedValue = Std.parseInt(substitute(element.att.width));
+							if (parsedValue == null)
+							{
+								Log.warn("Ignoring unknown width=\"" + element.att.width + "\"");
+							}
+							else
+							{
+								icon.width = parsedValue;
+							}
 						}
 
 						if (element.has.height)
 						{
-							icon.height = Std.parseInt(substitute(element.att.height));
+							var parsedValue = Std.parseInt(substitute(element.att.height));
+							if (parsedValue == null)
+							{
+								Log.warn("Ignoring unknown height=\"" + element.att.height + "\"");
+							}
+							else
+							{
+								icon.height = parsedValue;
+							}
 						}
 
 						if (element.has.priority)
 						{
-							icon.priority = Std.parseInt(substitute(element.att.priority));
+							var parsedValue = Std.parseInt(substitute(element.att.priority));
+							if (parsedValue == null)
+							{
+								Log.warn("Ignoring unknown priority=\"" + element.att.priority + "\"");
+							}
+							else
+							{
+								icon.priority = parsedValue;
+							}
 						}
 
 						icons.push(icon);
+					}
 
 					case "source", "classpath":
 						var path = "";
